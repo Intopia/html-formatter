@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML markup formatter</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f4f6f8;
+    --panel: #ffffff;
+    --text: #17212b;
+    --muted: #5c6874;
+    --border: #c7d0d9;
+    --accent: #1769aa;
+    --accent-strong: #0f578f;
+    --button-text: #ffffff;
+    --focus: #ffbf47;
+    --code-bg: #fbfcfd;
+    --danger: #a12a2a;
+    --success: #1d6f42;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11161c;
+      --panel: #1a2129;
+      --text: #eef3f7;
+      --muted: #b4bec8;
+      --border: #46515d;
+      --accent: #62aee8;
+      --accent-strong: #82c5f5;
+      --button-text: #07131d;
+      --focus: #ffd166;
+      --code-bg: #121920;
+      --danger: #ff8f8f;
+      --success: #84d4a8;
+      --shadow: none;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+
+  button,
+  select,
+  textarea,
+  input {
+    font: inherit;
+  }
+
+  button,
+  select,
+  input[type="file"] {
+    min-height: 44px;
+  }
+
+  button:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  input:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .app {
+    width: min(1500px, 100%);
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  header {
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    line-height: 1.15;
+  }
+
+  .intro {
+    max-width: 78ch;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .toolbar,
+  .output-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: end;
+  }
+
+  .toolbar {
+    margin-bottom: 16px;
+    padding: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .field {
+    display: grid;
+    gap: 5px;
+  }
+
+  .field label {
+    font-weight: 650;
+  }
+
+  select,
+  input[type="file"] {
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--panel);
+    color: var(--text);
+    padding: 8px 10px;
+  }
+
+  input[type="file"] {
+    max-width: 310px;
+  }
+
+  button {
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--panel);
+    color: var(--text);
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 650;
+  }
+
+  button:hover {
+    border-color: var(--accent);
+  }
+
+  button.primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--button-text);
+  }
+
+  button.primary:hover {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .panel {
+    min-width: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .count {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  textarea {
+    display: block;
+    width: 100%;
+    height: min(68vh, 760px);
+    min-height: 430px;
+    resize: vertical;
+    border: 0;
+    border-radius: 0;
+    background: var(--code-bg);
+    color: var(--text);
+    padding: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+  }
+
+  textarea:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .status {
+    min-height: 1.5em;
+    margin: 12px 2px 0;
+    color: var(--muted);
+  }
+
+  .status.success {
+    color: var(--success);
+  }
+
+  .status.error {
+    color: var(--danger);
+  }
+
+  .note {
+    margin: 12px 2px 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 900px) {
+    .app {
+      padding: 16px;
+    }
+
+    .panels {
+      grid-template-columns: 1fr;
+    }
+
+    textarea {
+      height: 52vh;
+      min-height: 330px;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>HTML markup formatter</h1>
+    <p class="intro">Paste raw HTML or upload an HTML file. The formatter changes whitespace and indentation only as far as practical. It does not render the HTML, repair invalid markup, reorder attributes, change quote styles, or insert missing tags.</p>
+  </header>
+
+  <div class="toolbar" aria-label="Formatting controls">
+    <div class="field">
+      <label for="fileInput">Upload HTML file</label>
+      <input id="fileInput" type="file" accept=".html,.htm,text/html">
+    </div>
+
+    <div class="field">
+      <label for="indentMode">Indentation</label>
+      <select id="indentMode">
+        <option value="2" selected>2 spaces</option>
+        <option value="4">4 spaces</option>
+        <option value="tab">Tab</option>
+      </select>
+    </div>
+
+    <button class="primary" id="formatButton" type="button">Format HTML</button>
+    <button id="clearButton" type="button">Clear</button>
+  </div>
+
+  <div class="panels">
+    <section class="panel" aria-labelledby="inputHeading">
+      <div class="panel-header">
+        <h2 id="inputHeading">Raw HTML</h2>
+        <span class="count" id="inputCount">0 characters</span>
+      </div>
+      <label for="input" class="visually-hidden">Raw HTML</label>
+      <textarea id="input" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Paste raw HTML here…"></textarea>
+    </section>
+
+    <section class="panel" aria-labelledby="outputHeading">
+      <div class="panel-header">
+        <div>
+          <h2 id="outputHeading">Formatted HTML</h2>
+          <span class="count" id="outputCount">0 characters</span>
+        </div>
+        <div class="output-toolbar">
+          <button id="copyButton" type="button" disabled>Copy</button>
+          <button id="downloadButton" type="button" disabled>Download</button>
+        </div>
+      </div>
+      <label for="output" class="visually-hidden">Formatted HTML</label>
+      <textarea id="output" spellcheck="false" autocapitalize="off" autocomplete="off" readonly></textarea>
+    </section>
+  </div>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+  <p class="note">For safety, pasted and uploaded HTML is handled as text only. It is never inserted into the page as live markup and scripts are never executed.</p>
+</main>
+
+<style>
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+</style>
+
+<script>
+(() => {
+  "use strict";
+
+  const input = document.getElementById("input");
+  const output = document.getElementById("output");
+  const fileInput = document.getElementById("fileInput");
+  const indentMode = document.getElementById("indentMode");
+  const formatButton = document.getElementById("formatButton");
+  const clearButton = document.getElementById("clearButton");
+  const copyButton = document.getElementById("copyButton");
+  const downloadButton = document.getElementById("downloadButton");
+  const status = document.getElementById("status");
+  const inputCount = document.getElementById("inputCount");
+  const outputCount = document.getElementById("outputCount");
+
+  let uploadedFileName = "formatted.html";
+
+  const VOID_TAGS = new Set([
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link",
+    "meta", "param", "source", "track", "wbr"
+  ]);
+
+  const BLOCK_TAGS = new Set([
+    "address", "article", "aside", "blockquote", "body", "caption", "colgroup",
+    "dd", "details", "dialog", "div", "dl", "dt", "fieldset", "figcaption",
+    "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head",
+    "header", "hgroup", "html", "li", "main", "nav", "ol", "optgroup", "option",
+    "p", "section", "summary", "table", "tbody", "td", "tfoot", "th", "thead",
+    "tr", "ul"
+  ]);
+
+  const COLLAPSIBLE_TAGS = new Set([
+    "a", "abbr", "b", "bdi", "bdo", "button", "caption", "cite", "code", "data",
+    "dd", "del", "dfn", "dt", "em", "figcaption", "font", "h1", "h2", "h3", "h4",
+    "h5", "h6", "i", "ins", "kbd", "label", "li", "mark", "option", "p", "q", "s",
+    "samp", "small", "span", "strong", "sub", "summary", "sup", "td", "th", "time",
+    "title", "u", "var"
+  ]);
+
+  function getIndentUnit() {
+    return indentMode.value === "tab" ? "\t" : " ".repeat(Number(indentMode.value));
+  }
+
+  function setStatus(message, type = "") {
+    status.textContent = message;
+    status.className = "status" + (type ? " " + type : "");
+  }
+
+  function updateCounts() {
+    inputCount.textContent = `${input.value.length.toLocaleString()} characters`;
+    outputCount.textContent = `${output.value.length.toLocaleString()} characters`;
+    const hasOutput = output.value.length > 0;
+    copyButton.disabled = !hasOutput;
+    downloadButton.disabled = !hasOutput;
+  }
+
+  function scanTagEnd(source, start) {
+    let quote = null;
+    for (let i = start + 1; i < source.length; i++) {
+      const ch = source[i];
+      if (quote) {
+        if (ch === quote) quote = null;
+        continue;
+      }
+      if (ch === "\"" || ch === "'") {
+        quote = ch;
+        continue;
+      }
+      if (ch === ">") return i;
+    }
+    return -1;
+  }
+
+  function parseTagMeta(raw) {
+    const match = raw.match(/^<\s*(\/?)\s*([A-Za-z][A-Za-z0-9:-]*)/);
+    if (!match) return null;
+    const name = match[2];
+    const lowerName = name.toLowerCase();
+    return {
+      name,
+      lowerName,
+      closing: match[1] === "/",
+      selfClosing: /\/\s*>$/.test(raw),
+      void: VOID_TAGS.has(lowerName)
+    };
+  }
+
+  function findClosingTag(source, fromIndex, tagName) {
+    const escaped = tagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const expression = new RegExp(`<\\/\\s*${escaped}\\b`, "ig");
+    expression.lastIndex = fromIndex;
+    const match = expression.exec(source);
+    return match ? match.index : -1;
+  }
+
+  function tokenizeHtml(source) {
+    const tokens = [];
+    let i = 0;
+
+    while (i < source.length) {
+      if (source.startsWith("<!--", i)) {
+        const end = source.indexOf("-->", i + 4);
+        if (end === -1) {
+          tokens.push({ type: "markup", raw: source.slice(i) });
+          break;
+        }
+        tokens.push({ type: "markup", raw: source.slice(i, end + 3) });
+        i = end + 3;
+        continue;
+      }
+
+      if (source.startsWith("<![CDATA[", i)) {
+        const end = source.indexOf("]]>", i + 9);
+        if (end === -1) {
+          tokens.push({ type: "markup", raw: source.slice(i) });
+          break;
+        }
+        tokens.push({ type: "markup", raw: source.slice(i, end + 3) });
+        i = end + 3;
+        continue;
+      }
+
+      if (source[i] !== "<") {
+        const next = source.indexOf("<", i);
+        const end = next === -1 ? source.length : next;
+        tokens.push({ type: "text", raw: source.slice(i, end) });
+        i = end;
+        continue;
+      }
+
+      const tagEnd = scanTagEnd(source, i);
+      if (tagEnd === -1) {
+        tokens.push({ type: "preserved", raw: source.slice(i) });
+        break;
+      }
+
+      const rawTag = source.slice(i, tagEnd + 1);
+      const meta = parseTagMeta(rawTag);
+
+      if (!meta) {
+        tokens.push({ type: "markup", raw: rawTag });
+        i = tagEnd + 1;
+        continue;
+      }
+
+      if (!meta.closing && !meta.selfClosing && !meta.void && (meta.lowerName === "pre" || meta.lowerName === "textarea")) {
+        const closeStart = findClosingTag(source, tagEnd + 1, meta.lowerName);
+        if (closeStart !== -1) {
+          const closeEnd = scanTagEnd(source, closeStart);
+          if (closeEnd !== -1) {
+            tokens.push({ type: "preserved", raw: source.slice(i, closeEnd + 1) });
+            i = closeEnd + 1;
+            continue;
+          }
+        } else {
+          tokens.push({ type: "preserved", raw: source.slice(i) });
+          break;
+        }
+      }
+
+      tokens.push({ type: "tag", raw: rawTag, ...meta });
+      i = tagEnd + 1;
+
+      if (!meta.closing && !meta.selfClosing && !meta.void && (meta.lowerName === "script" || meta.lowerName === "style")) {
+        const closeStart = findClosingTag(source, i, meta.lowerName);
+        if (closeStart !== -1) {
+          tokens.push({
+            type: meta.lowerName === "script" ? "script-content" : "style-content",
+            raw: source.slice(i, closeStart)
+          });
+          const closeEnd = scanTagEnd(source, closeStart);
+          if (closeEnd !== -1) {
+            const closeRaw = source.slice(closeStart, closeEnd + 1);
+            const closeMeta = parseTagMeta(closeRaw);
+            if (closeMeta) tokens.push({ type: "tag", raw: closeRaw, ...closeMeta });
+            else tokens.push({ type: "markup", raw: closeRaw });
+            i = closeEnd + 1;
+          } else {
+            i = source.length;
+          }
+        } else {
+          tokens.push({
+            type: meta.lowerName === "script" ? "script-content" : "style-content",
+            raw: source.slice(i)
+          });
+          i = source.length;
+        }
+      }
+    }
+
+    return tokens;
+  }
+
+  function formatTag(raw) {
+    if (!/^<\s*\/?\s*[A-Za-z][A-Za-z0-9:-]*/.test(raw)) return raw.trim();
+
+    let result = "";
+    let quote = null;
+    let pendingSpace = false;
+
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw[i];
+
+      if (quote) {
+        result += ch;
+        if (ch === quote) quote = null;
+        continue;
+      }
+
+      if (ch === "\"" || ch === "'") {
+        if (pendingSpace && result && !/\s$/.test(result)) result += " ";
+        pendingSpace = false;
+        quote = ch;
+        result += ch;
+        continue;
+      }
+
+      if (/\s/.test(ch)) {
+        pendingSpace = true;
+        continue;
+      }
+
+      if (pendingSpace && result && !/[<\s]$/.test(result) && ch !== ">") result += " ";
+      pendingSpace = false;
+      result += ch;
+    }
+
+    return result.trim();
+  }
+
+  function normalizeInlineText(raw) {
+    if (!raw) return "";
+    if (/^\s+$/.test(raw)) return " ";
+    return raw.replace(/\s+/g, " ");
+  }
+
+  function normalizeBlockText(raw) {
+    return raw.replace(/\s+/g, " ").trim();
+  }
+
+  function findMatchingClosingToken(tokens, startIndex) {
+    const start = tokens[startIndex];
+    if (!start || start.type !== "tag" || start.closing || start.selfClosing || start.void) return -1;
+
+    let depth = 0;
+    for (let i = startIndex + 1; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token.type !== "tag" || token.lowerName !== start.lowerName) continue;
+      if (!token.closing && !token.selfClosing && !token.void) {
+        depth++;
+      } else if (token.closing) {
+        if (depth === 0) return i;
+        depth--;
+      }
+    }
+    return -1;
+  }
+
+  function tryCollapseElement(tokens, startIndex, indentUnit, level) {
+    const start = tokens[startIndex];
+    if (!start || !COLLAPSIBLE_TAGS.has(start.lowerName)) return null;
+
+    const endIndex = findMatchingClosingToken(tokens, startIndex);
+    if (endIndex === -1) return null;
+
+    for (let i = startIndex + 1; i < endIndex; i++) {
+      const token = tokens[i];
+      if (token.type === "script-content" || token.type === "style-content" || token.type === "preserved" || token.type === "markup") return null;
+      if (token.type === "tag" && !token.closing && !token.selfClosing && !token.void && BLOCK_TAGS.has(token.lowerName)) return null;
+    }
+
+    let combined = "";
+    for (let i = startIndex; i <= endIndex; i++) {
+      const token = tokens[i];
+      if (token.type === "tag") combined += formatTag(token.raw);
+      else if (token.type === "text") combined += normalizeInlineText(token.raw);
+      else return null;
+    }
+
+    combined = combined.trim();
+    const totalLength = indentUnit.repeat(level).length + combined.length;
+    if (totalLength > 140 || combined.includes("\n")) return null;
+
+    return { endIndex, line: combined };
+  }
+
+  function lexCode(code, language) {
+    const tokens = [];
+    let i = 0;
+    let previousSignificant = null;
+
+    const regexKeywords = new Set([
+      "return", "throw", "case", "delete", "void", "typeof", "instanceof", "new",
+      "in", "of", "yield", "await", "else", "do"
+    ]);
+
+    function canStartRegex() {
+      if (!previousSignificant) return true;
+      if (regexKeywords.has(previousSignificant)) return true;
+      return /^(\(|\[|\{|=|:|,|;|!|\?|\+|-|\*|%|&|\||\^|~|<|>)$/.test(previousSignificant);
+    }
+
+    function push(type, value, significant = false) {
+      tokens.push({ type, value });
+      if (significant) previousSignificant = value;
+    }
+
+    while (i < code.length) {
+      const ch = code[i];
+
+      if (/\s/.test(ch)) {
+        let j = i + 1;
+        while (j < code.length && /\s/.test(code[j])) j++;
+        push("ws", code.slice(i, j));
+        i = j;
+        continue;
+      }
+
+      if (ch === "/" && code[i + 1] === "*") {
+        const end = code.indexOf("*/", i + 2);
+        const j = end === -1 ? code.length : end + 2;
+        push("comment", code.slice(i, j), true);
+        i = j;
+        continue;
+      }
+
+      if (language === "js" && ch === "/" && code[i + 1] === "/") {
+        let j = i + 2;
+        while (j < code.length && code[j] !== "\n" && code[j] !== "\r") j++;
+        push("comment", code.slice(i, j), true);
+        i = j;
+        continue;
+      }
+
+      if (ch === "\"" || ch === "'" || (language === "js" && ch === "`")) {
+        const quote = ch;
+        let j = i + 1;
+        while (j < code.length) {
+          if (code[j] === "\\") {
+            j += 2;
+            continue;
+          }
+          if (code[j] === quote) {
+            j++;
+            break;
+          }
+          j++;
+        }
+        push("atom", code.slice(i, j), true);
+        i = j;
+        continue;
+      }
+
+      if (language === "js" && ch === "/" && code[i + 1] !== "=" && canStartRegex()) {
+        let j = i + 1;
+        let inClass = false;
+        while (j < code.length) {
+          if (code[j] === "\\") {
+            j += 2;
+            continue;
+          }
+          if (code[j] === "[") inClass = true;
+          else if (code[j] === "]") inClass = false;
+          else if (code[j] === "/" && !inClass) {
+            j++;
+            while (j < code.length && /[A-Za-z]/.test(code[j])) j++;
+            break;
+          }
+          if (code[j] === "\n" || code[j] === "\r") break;
+          j++;
+        }
+        push("atom", code.slice(i, j), true);
+        i = j;
+        continue;
+      }
+
+      if (/[A-Za-z_$]/.test(ch)) {
+        let j = i + 1;
+        while (j < code.length && /[A-Za-z0-9_$]/.test(code[j])) j++;
+        const word = code.slice(i, j);
+        push("word", word, true);
+        i = j;
+        continue;
+      }
+
+      if (/[0-9]/.test(ch)) {
+        let j = i + 1;
+        while (j < code.length && /[A-Za-z0-9_.]/.test(code[j])) j++;
+        push("atom", code.slice(i, j), true);
+        i = j;
+        continue;
+      }
+
+      push("punct", ch, !/\s/.test(ch));
+      i++;
+    }
+
+    return tokens;
+  }
+
+  function formatCode(code, language, indentUnit) {
+    const tokens = lexCode(code, language);
+    const lines = [];
+    let current = "";
+    let level = 0;
+    let pendingSpace = false;
+    let parenDepth = 0;
+    let bracketDepth = 0;
+    let afterCloseBrace = false;
+
+    function writeLine(force = false) {
+      const cleaned = current.replace(/[ \t]+$/g, "");
+      if (cleaned || force) lines.push(indentUnit.repeat(Math.max(level, 0)) + cleaned);
+      current = "";
+      pendingSpace = false;
+    }
+
+    function ensureSpace() {
+      if (current && !/[ \t]$/.test(current)) current += " ";
+    }
+
+    function emit(value) {
+      if (pendingSpace) ensureSpace();
+      pendingSpace = false;
+
+      if (!value.includes("\n") && !value.includes("\r")) {
+        current += value;
+        return;
+      }
+
+      const parts = value.replace(/\r\n?/g, "\n").split("\n");
+      current += parts[0];
+      for (let i = 1; i < parts.length; i++) {
+        writeLine(true);
+        current = parts[i];
+      }
+    }
+
+    function nextSignificant(index) {
+      for (let i = index + 1; i < tokens.length; i++) {
+        if (tokens[i].type !== "ws") return tokens[i];
+      }
+      return null;
+    }
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (token.type === "ws") {
+        if (/\r|\n/.test(token.value)) {
+          if (current) writeLine();
+          else if (lines.length && lines[lines.length - 1] !== "") lines.push("");
+          afterCloseBrace = false;
+        } else {
+          pendingSpace = true;
+        }
+        continue;
+      }
+
+      if (afterCloseBrace) {
+        const value = token.value;
+        const continuationWord = token.type === "word" && ["else", "catch", "finally", "while"].includes(value);
+        const continuationPunct = [";", ",", ")", "]", ".", "?", ":"].includes(value);
+        if (continuationWord) ensureSpace();
+        else if (!continuationPunct && current) writeLine();
+        afterCloseBrace = false;
+      }
+
+      if (token.type === "comment") {
+        if (current) ensureSpace();
+        emit(token.value);
+        if (language === "js" && token.value.startsWith("//")) writeLine();
+        continue;
+      }
+
+      if (token.type !== "punct") {
+        emit(token.value);
+        continue;
+      }
+
+      const ch = token.value;
+
+      if (ch === "(") {
+        emit(ch);
+        parenDepth++;
+        continue;
+      }
+      if (ch === ")") {
+        pendingSpace = false;
+        emit(ch);
+        parenDepth = Math.max(0, parenDepth - 1);
+        continue;
+      }
+      if (ch === "[") {
+        emit(ch);
+        bracketDepth++;
+        continue;
+      }
+      if (ch === "]") {
+        pendingSpace = false;
+        emit(ch);
+        bracketDepth = Math.max(0, bracketDepth - 1);
+        continue;
+      }
+
+      if (ch === "{") {
+        if (current && !/[\s({[]$/.test(current)) ensureSpace();
+        emit("{");
+        writeLine();
+        level++;
+        continue;
+      }
+
+      if (ch === "}") {
+        if (current) writeLine();
+        level = Math.max(0, level - 1);
+        current = "}";
+        pendingSpace = false;
+        afterCloseBrace = true;
+        continue;
+      }
+
+      if (ch === ";") {
+        pendingSpace = false;
+        emit(";");
+        if (parenDepth === 0 && bracketDepth === 0) writeLine();
+        else pendingSpace = true;
+        continue;
+      }
+
+      if (ch === ",") {
+        pendingSpace = false;
+        emit(",");
+        const next = nextSignificant(i);
+        if (language === "css" && parenDepth === 0 && bracketDepth === 0 && next && next.value !== "}") {
+          writeLine();
+        } else {
+          pendingSpace = true;
+        }
+        continue;
+      }
+
+      emit(ch);
+    }
+
+    if (current) writeLine();
+
+    while (lines.length && lines[0] === "") lines.shift();
+    while (lines.length && lines[lines.length - 1] === "") lines.pop();
+
+    const compacted = [];
+    for (const line of lines) {
+      if (line === "" && compacted[compacted.length - 1] === "") continue;
+      compacted.push(line);
+    }
+    return compacted.join("\n");
+  }
+
+  function formatHtml(source, indentUnit) {
+    const tokens = tokenizeHtml(source);
+    const lines = [];
+    const stack = [];
+    let level = 0;
+
+    function addLine(text, atLevel = level) {
+      if (text === "") return;
+      const prefix = indentUnit.repeat(Math.max(0, atLevel));
+      const split = text.replace(/\r\n?/g, "\n").split("\n");
+      for (const line of split) lines.push(prefix + line);
+    }
+
+    function addPreserved(text, atLevel = level) {
+      if (text === "") return;
+      lines.push(indentUnit.repeat(Math.max(0, atLevel)) + text);
+    }
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (token.type === "text") {
+        if (/^\s*$/.test(token.raw)) continue;
+        const text = normalizeBlockText(token.raw);
+        if (text) addLine(text);
+        continue;
+      }
+
+      if (token.type === "preserved") {
+        addPreserved(token.raw);
+        continue;
+      }
+
+      if (token.type === "markup") {
+        addPreserved(token.raw.trim());
+        continue;
+      }
+
+      if (token.type === "script-content" || token.type === "style-content") {
+        const formatted = formatCode(
+          token.raw,
+          token.type === "script-content" ? "js" : "css",
+          indentUnit
+        );
+        if (formatted) addLine(formatted);
+        continue;
+      }
+
+      if (token.type !== "tag") continue;
+
+      if (!token.closing && !token.selfClosing && !token.void && token.lowerName !== "script" && token.lowerName !== "style") {
+        const collapsed = tryCollapseElement(tokens, i, indentUnit, level);
+        if (collapsed) {
+          addLine(collapsed.line);
+          i = collapsed.endIndex;
+          continue;
+        }
+      }
+
+      if (token.closing) {
+        const matchingIndex = stack.lastIndexOf(token.lowerName);
+        if (matchingIndex !== -1) {
+          // This only adjusts indentation state. It never inserts the missing closing tags.
+          level = matchingIndex;
+          stack.length = matchingIndex;
+          addLine(formatTag(token.raw), level);
+        } else {
+          addLine(formatTag(token.raw), Math.max(0, level - 1));
+        }
+        continue;
+      }
+
+      addLine(formatTag(token.raw));
+
+      if (!token.selfClosing && !token.void) {
+        stack.push(token.lowerName);
+        level++;
+      }
+    }
+
+    return lines.join("\n").trim();
+  }
+
+  function makeDownloadName(name) {
+    if (!name) return "formatted.html";
+    const dot = name.lastIndexOf(".");
+    if (dot <= 0) return `${name}-formatted.html`;
+    return `${name.slice(0, dot)}-formatted${name.slice(dot)}`;
+  }
+
+  async function copyOutput() {
+    if (!output.value) return;
+    try {
+      await navigator.clipboard.writeText(output.value);
+      setStatus("Formatted HTML copied to the clipboard.", "success");
+    } catch {
+      output.focus();
+      output.select();
+      const copied = document.execCommand("copy");
+      setStatus(copied ? "Formatted HTML copied to the clipboard." : "Copy failed. Select the output and copy it manually.", copied ? "success" : "error");
+    }
+  }
+
+  function downloadOutput() {
+    if (!output.value) return;
+    const blob = new Blob([output.value], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = uploadedFileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus(`Downloaded ${uploadedFileName}.`, "success");
+  }
+
+  function runFormatter() {
+    if (!input.value.trim()) {
+      output.value = "";
+      updateCounts();
+      setStatus("Paste HTML or upload a file first.", "error");
+      input.focus();
+      return;
+    }
+
+    try {
+      output.value = formatHtml(input.value, getIndentUnit());
+      output.scrollTop = 0;
+      updateCounts();
+      setStatus("Formatting complete. Invalid or unusual markup has been left in place rather than repaired.", "success");
+    } catch (error) {
+      console.error(error);
+      output.value = "";
+      updateCounts();
+      setStatus("The formatter could not process this source. Your original HTML has not been changed.", "error");
+    }
+  }
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+
+    try {
+      input.value = await file.text();
+      uploadedFileName = makeDownloadName(file.name);
+      output.value = "";
+      updateCounts();
+      setStatus(`Loaded ${file.name}. The file has not been executed or rendered.`, "success");
+    } catch (error) {
+      console.error(error);
+      setStatus("The selected file could not be read.", "error");
+    }
+  });
+
+  input.addEventListener("input", () => {
+    output.value = "";
+    uploadedFileName = "formatted.html";
+    updateCounts();
+    setStatus("");
+  });
+
+  formatButton.addEventListener("click", runFormatter);
+  clearButton.addEventListener("click", () => {
+    input.value = "";
+    output.value = "";
+    fileInput.value = "";
+    uploadedFileName = "formatted.html";
+    updateCounts();
+    setStatus("Cleared.");
+    input.focus();
+  });
+  copyButton.addEventListener("click", copyOutput);
+  downloadButton.addEventListener("click", downloadOutput);
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      runFormatter();
+    }
+  });
+
+  updateCounts();
+})();
+</script>
+</body>
+</html>
