@@ -3,41 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HTML markup formatter</title>
+<title>HTML markup formatter - Intopia</title>
+<link rel="shortcut icon" href="https://intopia.digital/wp-content/uploads/2017/06/cropped-Intopia_FINAL_icon-32x32.png" sizes="32x32">
 <style>
-  :root {
-    color-scheme: light dark;
-    --bg: #f4f6f8;
-    --panel: #ffffff;
-    --text: #17212b;
-    --muted: #5c6874;
-    --border: #c7d0d9;
-    --accent: #1769aa;
-    --accent-strong: #0f578f;
-    --button-text: #ffffff;
-    --focus: #ffbf47;
-    --code-bg: #fbfcfd;
-    --danger: #a12a2a;
-    --success: #1d6f42;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #11161c;
-      --panel: #1a2129;
-      --text: #eef3f7;
-      --muted: #b4bec8;
-      --border: #46515d;
-      --accent: #62aee8;
-      --accent-strong: #82c5f5;
-      --button-text: #07131d;
-      --focus: #ffd166;
-      --code-bg: #121920;
-      --danger: #ff8f8f;
-      --success: #84d4a8;
-      --shadow: none;
-    }
+  :root {
+    --ink: #16233d;
+    --ink-soft: #4a5875;
+    --paper: #efefef;
+    --panel: #ffffff;
+    --line: #d9d2be;
+    --border-strong: #dddddd;
+    --red: #a5322a;
+    --green: #29614a;
+    --focus: #1b4fbf;
+    --brand: #c03c0c;
+    --brand-hover: #9f3109;
+    --font-brand: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, Frutiger, 'Frutiger Linotype', Univers, Calibri, 'Gill Sans', 'Gill Sans MT', 'Myriad Pro', Myriad, 'DejaVu Sans Condensed', 'Liberation Sans', 'Nimbus Sans L', Tahoma, Geneva, sans-serif;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --radius: 4px;
   }
 
   * {
@@ -47,9 +34,9 @@
   body {
     margin: 0;
     min-width: 320px;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
     line-height: 1.5;
   }
 
@@ -66,10 +53,16 @@
     min-height: 44px;
   }
 
-  button:focus-visible,
-  select:focus-visible,
-  textarea:focus-visible,
-  input:focus-visible {
+  :focus {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  :focus-visible {
     outline: 3px solid var(--focus);
     outline-offset: 2px;
   }
@@ -77,23 +70,44 @@
   .app {
     width: min(1500px, 100%);
     margin: 0 auto;
-    padding: 24px;
+    padding: 32px 24px;
   }
 
   header {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
-  h1 {
-    margin: 0 0 6px;
-    font-size: clamp(1.8rem, 3vw, 2.5rem);
+  .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .intopia-logo {
+    width: 180px;
+    height: auto;
+  }
+
+  .brand-text h1 {
+    margin: 0 0 8px;
+    color: var(--brand);
+    font-family: var(--font-brand);
+    font-size: clamp(2rem, 3vw, 2.4rem);
+    font-weight: 600;
     line-height: 1.15;
   }
 
   .intro {
-    max-width: 78ch;
+    max-width: 82ch;
     margin: 0;
-    color: var(--muted);
+    color: var(--ink-soft);
+  }
+
+  .privacy {
+    margin: 8px 0 0;
+    color: var(--ink);
+    font-weight: 600;
   }
 
   .toolbar,
@@ -106,11 +120,10 @@
 
   .toolbar {
     margin-bottom: 16px;
-    padding: 14px;
+    padding: 16px;
     background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius);
   }
 
   .field {
@@ -119,15 +132,15 @@
   }
 
   .field label {
-    font-weight: 650;
+    font-weight: 600;
   }
 
   select,
   input[type="file"] {
-    border: 1px solid var(--border);
-    border-radius: 7px;
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius);
     background: var(--panel);
-    color: var(--text);
+    color: var(--ink);
     padding: 8px 10px;
   }
 
@@ -136,33 +149,36 @@
   }
 
   button {
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: var(--panel);
-    color: var(--text);
-    padding: 8px 14px;
+    border: 2px solid var(--brand);
+    border-radius: var(--radius);
+    background: var(--brand);
+    color: #ffffff;
+    padding: 10px 18px;
     cursor: pointer;
-    font-weight: 650;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
   }
 
   button:hover {
-    border-color: var(--accent);
+    border-color: var(--brand-hover);
+    background: var(--brand-hover);
   }
 
   button.primary {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: var(--button-text);
+    border-color: var(--brand);
+    background: var(--brand);
+    color: #ffffff;
   }
 
   button.primary:hover {
-    background: var(--accent-strong);
-    border-color: var(--accent-strong);
+    border-color: var(--brand-hover);
+    background: var(--brand-hover);
   }
 
   button:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    opacity: 0.5;
   }
 
   .panels {
@@ -174,9 +190,8 @@
   .panel {
     min-width: 0;
     background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius);
     overflow: hidden;
   }
 
@@ -187,16 +202,19 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid var(--border-strong);
   }
 
   h2 {
     margin: 0;
+    color: var(--ink);
+    font-family: var(--font-display);
     font-size: 1.05rem;
+    font-weight: 600;
   }
 
   .count {
-    color: var(--muted);
+    color: var(--ink-soft);
     font-size: 0.9rem;
   }
 
@@ -208,10 +226,10 @@
     resize: vertical;
     border: 0;
     border-radius: 0;
-    background: var(--code-bg);
-    color: var(--text);
+    background: var(--panel);
+    color: var(--ink);
     padding: 14px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 0.92rem;
     line-height: 1.5;
     tab-size: 2;
@@ -226,26 +244,26 @@
   .status {
     min-height: 1.5em;
     margin: 12px 2px 0;
-    color: var(--muted);
+    color: var(--ink-soft);
   }
 
   .status.success {
-    color: var(--success);
+    color: var(--green);
   }
 
   .status.error {
-    color: var(--danger);
+    color: var(--red);
   }
 
   .note {
     margin: 12px 2px 0;
-    color: var(--muted);
+    color: var(--ink-soft);
     font-size: 0.92rem;
   }
 
   @media (max-width: 900px) {
     .app {
-      padding: 16px;
+      padding: 20px 16px;
     }
 
     .panels {
@@ -261,9 +279,13 @@
 </head>
 <body>
 <main class="app">
-  <header>
-    <h1>HTML markup formatter</h1>
-    <p class="intro">Paste raw HTML or upload an HTML file. The formatter changes whitespace and indentation only as far as practical. It does not render the HTML, repair invalid markup, reorder attributes, change quote styles, or insert missing tags.</p>
+  <header class="brand">
+    <img src="https://intopia.digital/wp-content/themes/intopia-refresh/assets/images/intopia.png" alt="Intopia logo" class="intopia-logo">
+    <div class="brand-text">
+      <h1>HTML markup formatter</h1>
+      <p class="intro">Paste raw HTML or upload an HTML file. The formatter changes whitespace and indentation only as far as practical. It does not render the HTML, repair invalid markup, reorder attributes, change quote styles, or insert missing tags.</p>
+      <p class="privacy">Nothing you paste or upload leaves your browser.</p>
+    </div>
   </header>
 
   <div class="toolbar" aria-label="Formatting controls">
